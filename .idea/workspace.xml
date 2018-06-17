@@ -2,11 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="29c37867-72a8-4efa-ac68-87b01c5c050c" name="Default" comment="Finished initial porting to OpenAI Gym.&#10;&#10;First working version.">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gym_platform/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/gym_platform/envs/platform_env.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gym_platform/envs/platform_env.py" beforeDir="false" afterPath="$PROJECT_DIR$/gym_platform/envs/platform_env.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -48,8 +45,8 @@
       <file leaf-file-name="platform_env.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gym_platform/envs/platform_env.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="187">
-              <caret line="106" lean-forward="true" selection-start-line="106" selection-end-line="106" />
+            <state relative-caret-position="315">
+              <caret line="392" column="17" lean-forward="true" selection-start-line="392" selection-start-column="17" selection-end-line="392" selection-end-column="17" />
               <folding>
                 <element signature="e#211#229#0" expanded="true" />
               </folding>
@@ -81,8 +78,8 @@
       <file leaf-file-name="example.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gym_platform/envs/example.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="282">
-              <caret line="26" column="5" selection-start-line="26" selection-start-column="5" selection-end-line="26" selection-end-column="5" />
+            <state relative-caret-position="300">
+              <caret line="76" column="13" selection-start-line="76" selection-start-column="13" selection-end-line="76" selection-end-column="13" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -154,15 +151,15 @@
         <option value="$PROJECT_DIR$/gym_platform/envs/platform_simulator.txt" />
         <option value="$PROJECT_DIR$/gym_platform/envs/platform_engine.py" />
         <option value="$PROJECT_DIR$/setup.py" />
-        <option value="$PROJECT_DIR$/gym_platform/envs/platform_env.py" />
         <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/gym_platform/envs/platform_env.py" />
         <option value="$PROJECT_DIR$/gym_platform/envs/example.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="495" />
-    <option name="y" value="76" />
+    <option name="x" value="558" />
+    <option name="y" value="59" />
     <option name="width" value="1239" />
     <option name="height" value="968" />
   </component>
@@ -329,16 +326,16 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="495" y="76" width="1239" height="968" extended-state="0" />
+    <frame x="558" y="59" width="1239" height="968" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49069768" visible="true" weight="0.2714636" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49103448" visible="true" weight="0.2714636" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.50123054" side_tool="true" weight="0.1632184" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4987695" weight="0.15747127" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.4987695" visible="true" weight="0.15697674" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Python Console" order="7" />
-      <window_info active="true" id="Structure" order="1" sideWeight="0.5093023" side_tool="true" visible="true" weight="0.2714636" />
+      <window_info id="Structure" order="1" sideWeight="0.5089655" side_tool="true" visible="true" weight="0.2714636" />
       <window_info anchor="bottom" id="Terminal" order="7" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -659,23 +656,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gym_platform/envs/platform_env.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="106" lean-forward="true" selection-start-line="106" selection-end-line="106" />
-          <folding>
-            <element signature="e#211#229#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/ProgramData/Anaconda3/Lib/site-packages/numpy/core/fromnumeric.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="1774" selection-start-line="1774" selection-end-line="1774" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
@@ -686,10 +666,27 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://C:/ProgramData/Anaconda3/Lib/site-packages/numpy/core/fromnumeric.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="225">
+          <caret line="1774" selection-start-line="1774" selection-end-line="1774" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gym_platform/envs/platform_env.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="315">
+          <caret line="392" column="17" lean-forward="true" selection-start-line="392" selection-start-column="17" selection-end-line="392" selection-end-column="17" />
+          <folding>
+            <element signature="e#211#229#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/gym_platform/envs/example.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="282">
-          <caret line="26" column="5" selection-start-line="26" selection-start-column="5" selection-end-line="26" selection-end-column="5" />
+        <state relative-caret-position="300">
+          <caret line="76" column="13" selection-start-line="76" selection-start-column="13" selection-end-line="76" selection-end-column="13" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>

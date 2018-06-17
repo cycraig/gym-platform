@@ -105,18 +105,6 @@ class PlatformEnv(gym.Env):
         self.states = []
         self.render_states = []  # record internal states for playback, cleared on reset()
 
-        # Visualiser
-        pygame.init()
-        self.window_size = (SCREEN_WIDTH, SCREEN_HEIGHT)
-        self.window = pygame.display.set_mode(self.window_size)
-        self.clock = pygame.time.Clock()
-        self.background_sprite = pygame.image.load(BACKGROUND_PATH).convert_alpha()
-        self.platform_sprite = pygame.image.load(PLATFORM_PATH).convert_alpha()
-        self.enemy_sprite = pygame.image.load(ENEMY_PATH).convert_alpha()
-        self.player_sprite = pygame.image.load(PLAYER_PATH).convert_alpha()
-        self.centre = np.array((0, 100)) / 2
-        self.draw_surface = pygame.Surface(self.window_size)
-
         # available actions: RUN, HOP, LEAP
         # parameters for actions other than the one selected are ignored
         # action bounds were set from empirical testing using the default constants
@@ -135,7 +123,7 @@ class PlatformEnv(gym.Env):
                                             spaces.Discrete(200), # steps (200 limit is an estimate)
                                            ))
 
-        self.viewer = None
+        self.window = None
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -401,6 +389,25 @@ class PlatformEnv(gym.Env):
         #    self.viewer.close()
         #    self.viewer = None
         #    return
+
+        if close:
+            pygame.display.quit()
+            pygame.quit()
+            self.window = None
+            return
+
+        # initialise visualiser
+        if self.window is None:
+            pygame.init()
+            self.window_size = (SCREEN_WIDTH, SCREEN_HEIGHT)
+            self.window = pygame.display.set_mode(self.window_size)
+            self.clock = pygame.time.Clock()
+            self.background_sprite = pygame.image.load(BACKGROUND_PATH).convert_alpha()
+            self.platform_sprite = pygame.image.load(PLATFORM_PATH).convert_alpha()
+            self.enemy_sprite = pygame.image.load(ENEMY_PATH).convert_alpha()
+            self.player_sprite = pygame.image.load(PLAYER_PATH).convert_alpha()
+            self.centre = np.array((0, 100)) / 2
+            self.draw_surface = pygame.Surface(self.window_size)
 
         self._draw_render_states(mode)
 
