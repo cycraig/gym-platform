@@ -1,8 +1,14 @@
 from setuptools import setup
 
-setup(name='gym_platform',
-      version='0.0.1',
-      install_requires=['gym',
-                        'pygame>=1.9.3'
-                        'numpy>=1.14.0']
+setup(
+    name='gym_platform',
+    version='0.0.1',
+    description='Platform domain OpenAI Gym environment',
+    author='Craig James Bester',
+    packages=['gym_platform'],
+    include_package_data=True, # include asset files
+    install_requires=['gym',
+                      'pygame', #'pygame>=1.9.3'
+                      'numpy',  #'numpy>=1.14.0'
+    ]
 ) 

@@ -12,7 +12,7 @@ import pygame
 import os.path as path
 from gym import error, spaces, utils
 from gym.utils import seeding
-
+import sys
 
 class Constants:
     # platform constants
@@ -60,7 +60,7 @@ class Constants:
     # state_dim = Simulator().get_state().size
 
 
-ASSETS_PATH = "assets"
+ASSETS_PATH = path.join(path.dirname(__file__),"assets")
 ENEMY_PATH = path.join(ASSETS_PATH, "enemy.png")
 PLAYER_PATH = path.join(ASSETS_PATH, "player.png")
 PLATFORM_PATH = path.join(ASSETS_PATH, "platform_v3.png")
@@ -83,7 +83,8 @@ SCREEN_WIDTH = int(Constants.TOTAL_WIDTH)
 
 
 class PlatformEnv(gym.Env):
-    metadata = {'render.modes': ['human', 'rgb_array']}
+    # metadata = {'render.modes': ['human', 'rgb_array']}
+    metadata = {'render.modes': ['human']}  # cannot use rgb_array at the moment due to frame skip between actions
 
     def __init__(self):
         """ Setup environment """
@@ -101,8 +102,8 @@ class PlatformEnv(gym.Env):
         self.np_random = None
         self.seed()
 
-        self.states = []  # record internal states for playback, cleared on reset()
-        self.render_states = []
+        self.states = []
+        self.render_states = []  # record internal states for playback, cleared on reset()
 
         # Visualiser
         pygame.init()
@@ -115,7 +116,6 @@ class PlatformEnv(gym.Env):
         self.player_sprite = pygame.image.load(PLAYER_PATH).convert_alpha()
         self.centre = np.array((0, 100)) / 2
         self.draw_surface = pygame.Surface(self.window_size)
-        self._draw_background()
 
         # available actions: RUN, HOP, LEAP
         # parameters for actions other than the one selected are ignored
@@ -126,10 +126,14 @@ class PlatformEnv(gym.Env):
             720,  # hop
             430   # leap
         ])
-        self.action_space = spaces.Tuple((spaces.Discrete(3),
-                                          spaces.Box(parameters_min, parameters_max)))
-        self.observation_space = spaces.Tuple((spaces.Box(low=0, high=1, shape=self.get_state().shape),
-                                              spaces.Discrete(200)))  # steps (200 limit is an estimate)
+        self.action_space = spaces.Tuple((
+                                          spaces.Discrete(3),  # actions
+                                          spaces.Box(parameters_min, parameters_max, dtype=np.float32),  # parameters
+                                        ))
+        self.observation_space = spaces.Tuple((
+                                            spaces.Box(low=0, high=1, shape=self.get_state().shape, dtype=np.float32),
+                                            spaces.Discrete(200), # steps (200 limit is an estimate)
+                                           ))
 
         self.viewer = None
 
@@ -224,6 +228,7 @@ class PlatformEnv(gym.Env):
         param = action[1][act_index]
         steps = 0
         difft = 1.0
+        reward = 0.
         self.xpos = self.player.position[0]
 
         # update until back on platform
@@ -252,7 +257,6 @@ class PlatformEnv(gym.Env):
         self.enemy2.reset()
         self.states = []
         self.render_states = []
-        self._draw_background()
         return self.get_state(), 0
 
     def _on_platforms(self):
@@ -335,7 +339,11 @@ class PlatformEnv(gym.Env):
             frames = []
         length = len(self.render_states)
         for i in range(0, length):
-            pygame.event.get()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.display.quit()
+                    pygame.quit()
+                    sys.exit()
             self._draw_render_state(self.render_states[i])
         self.render_states = []  # clear states for next render
 
@@ -389,10 +397,10 @@ class PlatformEnv(gym.Env):
         return scaled_state
 
     def render(self, mode='human', close=False):
-        if self.viewer is not None:
-            self.viewer.close()
-            self.viewer = None
-            return
+        #if close and self.viewer is not None:
+        #    self.viewer.close()
+        #    self.viewer = None
+        #    return
 
         self._draw_render_states(mode)
 
