@@ -1,5 +1,7 @@
 # Platform Domain
 
+![Platform domain initial state](img/platform_domain.png)
+
 The Platform environment [[Masson et al. 2016]](https://arxiv.org/abs/1509.01644) uses a parameterised action space and continuous state space. The task involves an agent learning to avoid enemies and traverse across platforms to reach a goal. Three actions are available to the agent:
 
 - run(dx)
@@ -34,7 +36,7 @@ or
 
 ```python
 import gym
-imprt gym_platform
+import gym_platform
 env = gym.make('Platform-v0')
 ```
 
