@@ -2,17 +2,24 @@
 Platform domain by Warwick Masson et al. [2016], Reinforcement Learning with Parameterized Actions
 Based on code from https://github.com/WarwickMasson/aaai-platformer
 
-Author: Craig J. Bester
+Author: C. Bester
 June 2018
 """
 
 import numpy as np
 import gym
 import pygame
-import os.path as path
+import os
+from os import path
 from gym import error, spaces, utils
 from gym.utils import seeding
 import sys
+__numba = True
+try:
+    from numba import jit
+except:
+    __numba = False
+
 
 class Constants:
     # platform constants
@@ -53,18 +60,27 @@ class Constants:
     GRAVITY = 9.8
 
     # scaling constants
-    SHIFT_VECTOR = np.array([PLAYER_SIZE[0], 0., 0., ENEMY_SPEED,      # basic features
-                             0., 0., 0., 0., 0.])                      # platform features
-    SCALE_VECTOR = np.array([TOTAL_WIDTH + PLAYER_SIZE[0], MAX_DX, TOTAL_WIDTH, 2 * ENEMY_SPEED,         # basic
+    SHIFT_VECTOR = np.array([PLAYER_SIZE[0], 0., 0., ENEMY_SPEED,  # basic features
+                             0., 0., 0., 0., 0.])  # platform features
+    SCALE_VECTOR = np.array([TOTAL_WIDTH + PLAYER_SIZE[0], MAX_DX, TOTAL_WIDTH, 2 * ENEMY_SPEED,  # basic
                              MAX_PLATFORM_WIDTH, MAX_PLATFORM_WIDTH, MAX_GAP, TOTAL_WIDTH, MAX_HEIGHT])  # platform
-    # state_dim = Simulator().get_state().size
+
+    # available actions: RUN, HOP, LEAP
+    # parameters for actions other than the one selected are ignored
+    # action bounds were set from empirical testing using the default constants
+    PARAMETERS_MIN = np.array([0, 0, 0])
+    PARAMETERS_MAX = np.array([
+        30,  # run
+        720,  # hop
+        430  # leap
+    ])
 
 
-ASSETS_PATH = path.join(path.dirname(__file__),"assets")
+ASSETS_PATH = path.join(path.dirname(__file__), "assets")
 ENEMY_PATH = path.join(ASSETS_PATH, "enemy.png")
 PLAYER_PATH = path.join(ASSETS_PATH, "player.png")
 PLATFORM_PATH = path.join(ASSETS_PATH, "platform_v3.png")
-BACKGROUND_PATH = path.join(ASSETS_PATH, "background_2.png")
+BACKGROUND_PATH = path.join(ASSETS_PATH, "background.png")
 
 # actions
 RUN = "run"
@@ -78,7 +94,7 @@ ACTION_LOOKUP = {
     2: LEAP,
 }
 
-SCREEN_HEIGHT = 300
+SCREEN_HEIGHT = 300 # 500
 SCREEN_WIDTH = int(Constants.TOTAL_WIDTH)
 
 
@@ -105,23 +121,19 @@ class PlatformEnv(gym.Env):
         self.states = []
         self.render_states = []  # record internal states for playback, cleared on reset()
 
-        # available actions: RUN, HOP, LEAP
-        # parameters for actions other than the one selected are ignored
-        # action bounds were set from empirical testing using the default constants
-        parameters_min = np.array([0, 0, 0])
-        parameters_max = np.array([
-            30,   # run
-            720,  # hop
-            430   # leap
-        ])
+        num_actions = 3
         self.action_space = spaces.Tuple((
-                                          spaces.Discrete(3),  # actions
-                                          spaces.Box(parameters_min, parameters_max, dtype=np.float32),  # parameters
-                                        ))
+            spaces.Discrete(num_actions),  # actions
+            # spaces.Box(Constants.PARAMETERS_MIN, Constants.PARAMETERS_MAX, dtype=np.float32),  # parameters
+            spaces.Tuple(  # parameters
+                tuple(spaces.Box(low=np.array([Constants.PARAMETERS_MIN[i]]), high=np.array([Constants.PARAMETERS_MAX[i]]), dtype=np.float32)
+                      for i in range(num_actions))
+            )
+        ))
         self.observation_space = spaces.Tuple((
-                                            spaces.Box(low=0, high=1, shape=self.get_state().shape, dtype=np.float32),
-                                            spaces.Discrete(200), # steps (200 limit is an estimate)
-                                           ))
+            spaces.Box(low=0., high=1., shape=self.get_state().shape, dtype=np.float32),
+            spaces.Discrete(200),  # steps (200 limit is an estimate)
+        ))
 
         self.window = None
 
@@ -147,14 +159,14 @@ class PlatformEnv(gym.Env):
             self.draw_surface.blit(sprite, (pos[0], pos[1]))
 
     def _draw_background(self):
-        ''' Draw the static elements. '''
+        """ Draw the static elements. """
         self.draw_surface.blit(self.background_sprite, (0, 0))
         self._draw_entity(self.platform1, self.platform_sprite)
         self._draw_entity(self.platform2, self.platform_sprite)
         self._draw_entity(self.platform3, self.platform_sprite)
 
     def _draw_foreground(self, render_state=None):
-        ''' Draw the player and the enemies. '''
+        """ Draw the player and the enemies. """
         if render_state:
             player_pos = render_state[0]
             enemy1_pos = render_state[1]
@@ -186,7 +198,7 @@ class PlatformEnv(gym.Env):
         self._draw_to_screen(alpha)
 
     def _draw_to_screen(self, alpha=255):
-        ''' Draw the current window to the screen. '''
+        """ Draw the current window to the screen. """
         surf = pygame.transform.flip(self.draw_surface, False, True)
         surf.set_alpha(alpha)
         self.window.blit(surf, (0, 0))
@@ -198,7 +210,7 @@ class PlatformEnv(gym.Env):
 
         Parameters
         ----------
-        action (array-like) :
+        action (ndarray) :
 
         Returns
         -------
@@ -208,12 +220,17 @@ class PlatformEnv(gym.Env):
             terminal (bool) :
             info (dict) :
         """
-        assert self.action_space.contains(action), "%r (%s) invalid" % (action, type(action))
+        # assert self.action_space.contains(action), "%r (%s) invalid" % (action, type(action))
+
         terminal = False
         running = True
         act_index = action[0]
         act = ACTION_LOOKUP[act_index]
-        param = action[1][act_index]
+        param = action[1][act_index][0]
+        #print(action)
+        #print(act,param)
+        param = np.clip(param, Constants.PARAMETERS_MIN[act_index], Constants.PARAMETERS_MAX[act_index])
+
         steps = 0
         difft = 1.0
         reward = 0.
@@ -228,7 +245,6 @@ class PlatformEnv(gym.Env):
                 running = difft > 0
             elif act in [JUMP, HOP, LEAP]:
                 running = not self._on_platforms()
-                action = None
 
             if terminal:
                 running = False
@@ -257,13 +273,13 @@ class PlatformEnv(gym.Env):
     def _perform_action(self, act, parameters, dt=Constants.DT):
         """ Applies for selected action for the given agent. """
         if self._on_platforms():
-            if act == "jump":
+            if act == JUMP:
                 self.player.jump(parameters)
-            elif act == "run":
+            elif act == RUN:
                 self.player.run(parameters, dt)
-            elif act == "leap":
+            elif act == LEAP:
                 self.player.leap_to(parameters)
-            elif act == "hop":
+            elif act == HOP:
                 self.player.hop_to(parameters)
         else:
             self.player.fall()
@@ -298,7 +314,7 @@ class PlatformEnv(gym.Env):
         reward (float) :
         terminal (bool) :
         """
-        #self.xpos = self.player.position[0]
+        # self.xpos = self.player.position[0]
         self.states.append([self.player.position.copy(),
                             self.enemy1.position.copy(),
                             self.enemy2.position.copy()])
@@ -341,7 +357,7 @@ class PlatformEnv(gym.Env):
 
         Parameters
         ----------
-        state : unscaled state
+        basic_features :
         """
         xpos = basic_features[0]
         if xpos < Constants.WIDTH1 + Constants.GAP1:
@@ -363,6 +379,7 @@ class PlatformEnv(gym.Env):
             gap = 0.0
             diff = 0.0
         return [wd1, wd2, gap, pos, diff]
+        # return [wd1 // Constants.MAX_PLATFORM_WIDTH, wd2 // Constants.MAX_PLATFORM_WIDTH, gap // Constants.MAX_GAP, pos // Constants.TOTAL_WIDTH, diff // Constants.MAX_HEIGHT]
 
     def _scale_state(self, state):
         scaled = (state + Constants.SHIFT_VECTOR) / Constants.SCALE_VECTOR
@@ -377,25 +394,34 @@ class PlatformEnv(gym.Env):
         basic_features = [
             self.player.position[0],  # 0
             self.player.velocity[0],  # 1
-            enemy.position[0],        # 2
-            enemy.dx]                 # 3
+            enemy.position[0],  # 2
+            enemy.dx]  # 3
         platform_features = self._platform_features(basic_features)
         state = np.concatenate((basic_features, platform_features))
         scaled_state = self._scale_state(state)
         return scaled_state
 
     def render(self, mode='human', close=False):
-        #if close and self.viewer is not None:
-        #    self.viewer.close()
-        #    self.viewer = None
-        #    return
-
         if close:
             pygame.display.quit()
             pygame.quit()
             self.window = None
             return
 
+        self._initialse_window()
+
+        self._draw_render_states(mode)
+
+        img = self._get_image()
+        if mode == 'rgb_array':
+            return img
+        # elif mode == 'human':
+        #    from gym.envs.classic_control import rendering
+        #    if self.viewer is None:
+        #        self.viewer = rendering.SimpleImageViewer(SCREEN_WIDTH, SCREEN_HEIGHT)
+        #    self.viewer.imshow(img)
+
+    def _initialse_window(self):
         # initialise visualiser
         if self.window is None:
             pygame.init()
@@ -409,16 +435,14 @@ class PlatformEnv(gym.Env):
             self.centre = np.array((0, 100)) / 2
             self.draw_surface = pygame.Surface(self.window_size)
 
-        self._draw_render_states(mode)
-
-        img = self._get_image()
-        if mode == 'rgb_array':
-            return img
-        #elif mode == 'human':
-        #    from gym.envs.classic_control import rendering
-        #    if self.viewer is None:
-        #        self.viewer = rendering.SimpleImageViewer(SCREEN_WIDTH, SCREEN_HEIGHT)
-        #    self.viewer.imshow(img)
+    def save_render_states(self, dir, prefix, index=0):
+        self._initialse_window()
+        import os
+        for s in self.render_states:
+            self._draw_render_state(s)
+            pygame.image.save(self.window, os.path.join(dir, prefix+"_"+str("{:04d}".format(index))+".bmp"))
+            index += 1
+        return index
 
 
 class Platform:
@@ -441,6 +465,7 @@ class Enemy:
         self.platform = platform
         self.position = self.platform.size + self.platform.position
         self.position[0] -= self.size[0]
+        self.np_random = np.random  # overwritten by seed()
 
     def reset(self):
         self.dx = -self.speed
@@ -458,8 +483,11 @@ class Enemy:
         self.position[0] = np.clip(self.position[0], self.platform.position[0], right)
 
 
-class Player(Enemy):
+class Player:
     """ Represents the player character. """
+
+    size = Constants.ENEMY_SIZE
+    speed = Constants.ENEMY_SPEED
 
     def __init__(self):
         """ Initialize the position to the starting platform. """
@@ -467,6 +495,7 @@ class Player(Enemy):
         # self.velocity = vector(self.np_random.rand()*0.0001, 0.0)
         self.position = np.array((0., Constants.PLATFORM_HEIGHT))
         self.velocity = np.array((0., 0.0))
+        self.np_random = np.random  # overwritten by seed()
 
     def reset(self):
         self.position = np.array((0., Constants.PLATFORM_HEIGHT))
@@ -483,7 +512,8 @@ class Player(Enemy):
         accel = np.clip(accel, (-Constants.MAX_DDX, -Constants.MAX_DDY), (Constants.MAX_DDX, Constants.MAX_DDY))
         self.velocity += accel * dt
         self.velocity[0] -= abs(self.np_random.normal(0.0, Constants.PLAYER_NOISE * dt))
-        self.velocity = np.clip(self.velocity, (-Constants.MAX_DX, -Constants.MAX_DY), (Constants.MAX_DX, Constants.MAX_DY))
+        self.velocity = np.clip(self.velocity, (-Constants.MAX_DX, -Constants.MAX_DY),
+                                (Constants.MAX_DX, Constants.MAX_DY))
         self.velocity[0] = max(self.velocity[0], 0.0)
 
     def ground_bound(self):
@@ -560,9 +590,21 @@ class Player(Enemy):
 
     def colliding(self, other):
         """ Check if two entities are overlapping. """
-        precorner = other.position - self.size
-        postcorner = other.position + other.size
-        collide = (precorner < self.position).all()
-        collide = collide and (self.position < postcorner).all()
-        return collide
+        return _colliding(self.size, self.position, other.size, other.position)
 
+
+if __numba:
+    @jit(nogil=True, nopython=True)
+    def _colliding(self_size, self_position, other_size, other_position):
+        precorner = other_position - self_size
+        postcorner = other_position + other_size
+        collide = np.all(precorner < self_position)
+        collide = collide and np.all(self_position < postcorner)
+        return collide
+else:
+    def _colliding(self_size, self_position, other_size, other_position):
+        precorner = other_position - self_size
+        postcorner = other_position + other_size
+        collide = np.all(precorner < self_position)
+        collide = collide and np.all(self_position < postcorner)
+        return collide
