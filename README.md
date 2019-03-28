@@ -10,7 +10,7 @@ The Platform environment [[Masson et al. 2016]](https://arxiv.org/abs/1509.01644
 
 A dense reward is given to the agent based on the distance it travels. The cumulative return is normalised to 1, achieved by reaching the goal. An episode terminates if the agent touches an enemy or falls into a gap between platforms. 
 
-This code is a port of https://github.com/WarwickMasson/aaai-platform to use the OpenAI Gym framework.
+This code is a port of https://github.com/WarwickMasson/aaai-platformer to use the OpenAI Gym framework.
 
 ## Dependencies
 
