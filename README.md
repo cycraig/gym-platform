@@ -59,4 +59,15 @@ If you use this domain in your research, please cite the original author:
     
 You may also consider citing the following paper:
 
-    Coming soon...
+```bibtex
+@article{bester2019mpdqn,
+	author    = {Bester, Craig J. and James, Steven D. and Konidaris, George D.},
+	title     = {Multi-Pass {Q}-Networks for Deep Reinforcement Learning with Parameterised Action Spaces},
+	journal   = {arXiv preprint arXiv:1905.04388},
+	year      = {2019},
+	archivePrefix = {arXiv},
+	eprinttype    = {arxiv},
+	eprint    = {1905.04388},
+	url       = {http://arxiv.org/abs/1905.04388},
+}
+```
